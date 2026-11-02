@@ -161,6 +161,13 @@ python scripts/export_model_arrays.py
 python scripts/section6_pipeline_checks.py
 ```
 
+The same checks, step by step and without writing any files, are in `notebooks/01_smoke_test.ipynb` (kernel:
+the training environment). To run it from top to bottom without opening Jupyter:
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace notebooks/01_smoke_test.ipynb
+```
+
 **6. Timing on Kaggle** (in a Kaggle notebook cell, after adding the dataset)
 
 ```bash
@@ -207,6 +214,7 @@ project/
 ├── pyproject.toml                makes src/gold_dl installable (pip install -e .)
 ├── src/gold_dl/        reusable package: config.py (paths and settings), data_pipeline.py (tf.data pipeline, loss)
 ├── scripts/            processing, labelling, check and figure scripts
+├── notebooks/          01_smoke_test.ipynb: batch shapes, types, label values, window check, 300-step smoke test
 ├── tests/              test_split.py: no minute in two sets, time order, 60-minute gaps
 ├── 数据说明/            report notes, figures and tables (Chinese and English figures)
 ├── GC_mbp1/            raw MBP-1 files            (not committed)
@@ -216,7 +224,7 @@ project/
 └── model_data/         model_arrays.npz           (not committed)
 ```
 
-<!-- TODO: add notebooks/ to this tree. Only gold_dl and tests/ read config.yaml so far; the scripts still keep their own constants. -->
+<!-- TODO: only gold_dl and tests/ read config.yaml so far; the scripts still keep their own constants. -->
 
 ## Licence
 
