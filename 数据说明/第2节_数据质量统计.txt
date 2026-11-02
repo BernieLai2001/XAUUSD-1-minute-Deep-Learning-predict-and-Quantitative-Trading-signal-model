@@ -1,0 +1,42 @@
+== 1. file integrity
+MBP-1 job files checked: 15, hash mismatches: 0
+D3 OHLCV-1m dbn records read: 350611
+D1 spot csv rows read: 500874, unparseable/NaN price cells: 0
+
+== 2. duplicates
+D1 spot duplicate timestamps: 0
+D3 duplicate timestamps: 0
+GC minutes appearing in more than one monthly file (merged at processing): 0
+duplicate timestamps after processing: orderflow 0, features 0
+
+== 3. invalid bars
+D1 spot: rows 500874, {'high<low': 0, 'open/close outside [low, high]': 0, 'price <= 0': 0, 'flat bar (O=H=L=C)': 1659}
+GC 1-min (from MBP-1): rows 350611, {'high<low': 0, 'open/close outside [low, high]': 0, 'price <= 0': 0, 'flat bar (O=H=L=C)': 2408, 'volume <= 0': 0}
+GC quote 1-min: rows 353022, bid_high<bid_low 0, ask_high<ask_low 0, close crossed (ask<=bid) 0
+
+== 4. missing minutes
+expected CME trading minutes 358920, present 349231, missing 9689 (2.70%)
+days with most missing minutes (holiday early closes etc.): {datetime.date(2025, 12, 25): 1215, datetime.date(2026, 4, 3): 1080, datetime.date(2026, 1, 1): 1020, datetime.date(2025, 11, 28): 799, datetime.date(2026, 5, 28): 543, datetime.date(2026, 7, 30): 521}
+gaps between bars: 1 min 99.50%, 2-5 0.39%, 6-30 0.03%, >30 0.08%
+
+== 5. removed samples
+GC 1-min bars 350611, feature rows 349231, warm-up removed 1380
+split counts: {'train': 244401, 'test': 52386, 'val': 52324, '': 120}
+H15: label NaN 1752 (0.50%), in train 1220; reasons {'no quote at entry': 737, 'crosses roll': 3, 'quote gap > 10 min (halt)': 1012, 'end of data': 0}
+H30: label NaN 5579 (1.60%), in train 3881; reasons {'no quote at entry': 737, 'crosses roll': 8, 'quote gap > 10 min (halt)': 4834, 'end of data': 0}
+H60: label NaN 13196 (3.78%), in train 9186; reasons {'no quote at entry': 737, 'crosses roll': 18, 'quote gap > 10 min (halt)': 12441, 'end of data': 0}
+degraded-day rows (flag kept, NOT removed): 3419; dates ['2025-11-28', '2025-11-29', '2026-03-16', '2026-03-17', '2026-04-10', '2026-04-11', '2026-05-25']
+wide-spread minutes (kept, flagged): 6906
+
+== 6. rolls
+instrument_id changes in feature period: 5; contracts: [39231, 42001025, 42000890, 19181, 42011464, 41271]
+  2025-11-27 08:00:00 (Beijing): 39231 -> 42001025, old close 4162.0, new open 4196.5, gap +34.5
+  2026-01-30 08:00:00 (Beijing): 42001025 -> 42000890, old close 5418.4, new open 5467.5, gap +49.1
+  2026-03-30 08:00:00 (Beijing): 42000890 -> 19181, old close 4446.9, new open 4477.0, gap +30.1
+  2026-05-29 08:00:00 (Beijing): 19181 -> 42011464, old close 4491.8, new open 4525.5, gap +33.7
+  2026-07-31 08:00:00 (Beijing): 42011464 -> 41271, old close 4099.9, new open 4164.8, gap +64.9
+
+== 7. side = N trades
+trades 29326766, side=N trades 855785 (2.92%), side=N volume 1186887 (2.82%)
+side=N volume falling in the first minute after a reopen: 0.6% (first minutes are 264 of 350611 minutes)
+total volume 42074743, buy 20361640, sell 20526216, share with side known 97.18%

@@ -1,0 +1,43 @@
+训练集样本 232,608 行
+
+删除前（34 个特征）：|r| > 0.7 的特征对
+  ma_dist_60 ~ range_pos_60: 0.932
+  ma_dist_15 ~ rsi_14: 0.898
+  ma_dist_60 ~ rsi_14: 0.890
+  ret_15 ~ rsi_14: 0.878
+  rsi_14 ~ range_pos_60: 0.858
+  ma_dist_15 ~ ret_5: 0.846
+  ma_dist_15 ~ ret_15: 0.841
+  ma_dist_60 ~ ret_60: 0.823
+  tod_cos ~ sess_asia: 0.804
+  d_high ~ d_close: 0.785
+  d_low ~ d_close: 0.783
+  ret_60 ~ range_pos_60: 0.779
+  ma_dist_60 ~ ret_15: 0.719
+  ret_5 ~ rsi_14: 0.711
+  ret_15 ~ range_pos_60: 0.703
+  |r| > 0.9 的对数 1；最大 |r| 0.932
+
+删除后（33 个特征）：|r| > 0.7 的特征对
+  ma_dist_15 ~ rsi_14: 0.898
+  ma_dist_60 ~ rsi_14: 0.890
+  ret_15 ~ rsi_14: 0.878
+  ma_dist_15 ~ ret_5: 0.846
+  ma_dist_15 ~ ret_15: 0.841
+  ma_dist_60 ~ ret_60: 0.823
+  tod_cos ~ sess_asia: 0.804
+  d_high ~ d_close: 0.785
+  d_low ~ d_close: 0.783
+  ma_dist_60 ~ ret_15: 0.719
+  ret_5 ~ rsi_14: 0.711
+  |r| > 0.9 的对数 0；最大 |r| 0.898
+
+range_pos_60 与其他特征的相关系数（删除前，按绝对值排序，前 8 个）
+  ma_dist_60: 0.932
+  rsi_14: 0.858
+  ret_60: 0.779
+  ret_15: 0.703
+  ma_dist_15: 0.667
+  ma_dist_240: 0.548
+  ret_5: 0.500
+  delta_ratio_15: 0.343
