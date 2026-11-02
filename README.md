@@ -121,9 +121,14 @@ python scripts/make_labels.py
 python scripts/save_default_labels.py
 ```
 
+```bash
+python scripts/make_labels_with_preroll_check.py
+```
+
 `make_labels.py` builds the labels for all 12 barrier combinations and assigns the time-based split
 (train / validation / test, with 60-minute gaps between them); `save_default_labels.py` selects the default
-combination (k_SL = 2, 1:1).
+combination (k_SL = 2, 1:1). `make_labels_with_preroll_check.py` rebuilds the labels without excluding the
+3 days before each roll, only for the before/after comparison in figure 6(c).
 
 **4. Long-tail treatment, standardisation and export (statistics from the training set only)**
 
@@ -169,7 +174,15 @@ python kaggle_timing.py --L 120
 | Kaggle timing | `kaggle_timing.py` | `kaggle_timing.json`; copied to `数据说明/第6节/kaggle_timing_T4.csv` |
 | Univariate feature checks, monthly class shares | `section7_checks.py`, `check_monthly_sl_drift.py` | `数据说明/第7节_特征单变量检查.csv`, printed |
 
-<!-- TODO: add the test, e.g. `pytest tests/test_split.py`, once it exists. -->
+### Split test
+
+The split is by time: every minute belongs to exactly one set, the sets are in time order, and each boundary
+leaves a gap of 60 minutes (the longest holding period). The test checks this on the label table and on the
+samples in `model_arrays.npz` (processing environment, after step 4):
+
+```bash
+pytest tests/test_split.py
+```
 
 ## Repository structure
 
@@ -181,6 +194,7 @@ project/
 ├── requirements-processing.txt   pinned packages for steps 1–4 and figures
 ├── requirements-train.txt        pinned packages for steps 5–6
 ├── scripts/            processing, labelling, pipeline and figure scripts (to be moved into src/)
+├── tests/              test_split.py: no minute in two sets, time order, 60-minute gaps
 ├── 数据说明/            report notes, figures and tables (Chinese and English figures)
 ├── GC_mbp1/            raw MBP-1 files            (not committed)
 ├── GC_processed/       1-minute data rebuilt from MBP-1 (not committed)
