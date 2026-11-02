@@ -2,11 +2,6 @@
 
 IE7615 Deep Learning, Fall 2026. Kaiyuan Lai (lai.kaiy@northeastern.edu).
 
-> **Status (M3, work in progress).** The scripts below still live in a flat `scripts/` folder and read and write
-> absolute paths under `/Users/laikaiyuan/Desktop/project`. Until they are moved into the `src/` package and read
-> their paths from `config.yaml`, set the path constant `P` (or `D`, `DESK`) at the top of each script to your clone.
-> Remove this note once that is done.
-
 ## Problem and intended user
 
 <!-- TODO: state the problem and the intended user in your own words. -->
@@ -65,7 +60,8 @@ pip install -r requirements-train.txt
 
 ## Reproducing the results
 
-Run from the project root, in this order. Random seeds are fixed at 42 wherever randomness affects a result.
+Run from the project root, in this order. Every script finds the project root from its own location, so the
+clone can live in any folder. Random seeds are fixed at 42 wherever randomness affects a result.
 
 **1. Download (processing environment)**
 
@@ -110,8 +106,6 @@ python scripts/build_gc_spread_tw_1min.py
 ```bash
 python scripts/build_gc_trades_1min.py
 ```
-
-<!-- TODO: process_gc_mbp1.py and fix_gc_delta.py still read the discarded XAU/USD spot file (XAUUSD_1min_1year.csv). Remove that dependency. -->
 
 **3. Features, labels and the split**
 
