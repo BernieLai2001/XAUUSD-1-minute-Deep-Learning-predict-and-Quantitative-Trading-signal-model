@@ -1,0 +1,53 @@
+# All settings in one place. Values are the ones the scripts currently hard-code
+# (script name in brackets). Paths are relative to the project root.
+
+paths:
+  raw_mbp1: GC_mbp1                       # [databento_gc_mbp1.py]
+  raw_ohlcv1m: GC_ohlcv1m_1year.dbn.zst   # [databento_gc_ohlcv1m.py]
+  processed: GC_processed                 # [build_gc_*_1min.py]
+  features: features                      # [build_features.py]
+  labels: labels                          # [make_labels.py]
+  model_arrays: model_data/model_arrays.npz   # [export_model_arrays.py]
+  notes: 数据说明
+  databento_key: databento_key.txt        # not committed
+
+data:
+  dataset: GLBX.MDP3
+  symbol: GC.v.0
+  tick: 0.1                    # USD per tick [make_labels.py, build_features.py]
+
+cleaning:
+  max_fill_gap_min: 30         # fill intraday gaps of up to 30 minutes [build_features.py]
+  quote_ffill_limit_min: 10    # carry the last quote forward for at most 10 minutes [make_labels.py]
+  pre_roll_days: 3             # no samples in the 3 days before a roll [build_features.py, make_labels.py]
+  wide_spread_mult: 5          # extreme spread = 5 x training median (20 ticks) [make_labels.py]
+
+split:                         # by time, in order [make_labels.py]
+  train_frac: 0.70
+  val_frac: 0.15
+  test_frac: 0.15
+  gap_min: 60                  # minutes removed at each boundary = longest holding period
+
+labels:                        # triple barrier [make_labels.py, save_default_labels.py]
+  holding_min: [15, 30, 60]
+  atr_period: 14
+  k_sl_grid: [1, 1.5, 2, 3]
+  rr_grid: [1, 1.5, 2]
+  default_k_sl: 2
+  default_rr: 1
+  m4_min_class_share: 0.15     # candidate combinations for M4
+  cost_per_side_usd: 2.52      # 1.65 exchange + 0.02 NFA + 0.85 commission, per contract (100 oz)
+
+features:                      # [transform_tail_features.py, standardize_features.py]
+  log_then_clip: [spread_atr, relvol_60, atr_rel, vol_ratio_5_60]
+  clip_only: [ofi_depth_adj, d_open, d_high, d_low]
+  keep_as_is: [dow_mon, dow_tue, dow_wed, dow_thu, dow_fri, sess_london, sess_ny, sess_overlap, sess_asia, tod_sin, tod_cos]
+
+pipeline:                      # [data_pipeline.py]
+  lookback: 60
+  batch_size: 256
+
+training:
+  seed: 42
+  max_epochs: 30
+  mixed_precision: true

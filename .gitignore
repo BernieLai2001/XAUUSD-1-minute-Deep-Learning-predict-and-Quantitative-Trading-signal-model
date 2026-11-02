@@ -1,0 +1,54 @@
+# ---------- Credentials (never commit) ----------
+databento_key.txt
+kaggle.json
+.env
+*.key
+# fetch_xauusd.py contains a hard-coded Twelve Data API key (discarded spot data)
+scripts/fetch_xauusd.py
+
+# Helper scripts that search local chat transcripts, unrelated to the results
+scripts/search_transcript_*.py
+
+# ---------- Data: CME market data, licence forbids redistribution ----------
+/GC_mbp1/
+/GC_processed/
+/features/
+/labels/
+/model_data/
+/dukascopy_cache/
+/data/
+*.dbn
+*.dbn.zst
+*.zst
+*.parquet
+*.npz
+/*.csv
+
+# Report files that contain rows of raw or per-minute market data
+数据说明/示例_10秒逐笔成交_*.csv
+数据说明/特征输入示例*.csv
+数据说明/标签输出示例*.csv
+数据说明/标签审核/标签审核_抽样60.csv
+数据说明/第6节/batch_check.csv
+
+# ---------- Model checkpoints and large outputs ----------
+/checkpoints/
+*.keras
+*.h5
+*.ckpt*
+kaggle_timing.json
+
+# ---------- Old versions kept locally ----------
+_old*/
+
+# ---------- Environment and editor ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+.DS_Store
+.vscode/
+.idea/
+~$*

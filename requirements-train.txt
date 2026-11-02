@@ -1,0 +1,11 @@
+# Input pipeline, smoke test and training. Python 3.10.20
+# On Kaggle, use the default image (TensorFlow 2.20.0); do not install this file there.
+tensorflow==2.16.2
+tensorflow-metal==1.2.0; sys_platform == "darwin"
+keras==3.12.1
+numpy==1.26.4
+pandas==2.3.3
+scipy==1.15.3
+matplotlib==3.10.8
+PyYAML==6.0.2
+pytest==8.3.4
