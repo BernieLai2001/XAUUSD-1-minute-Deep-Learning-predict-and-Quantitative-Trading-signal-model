@@ -7,11 +7,12 @@ IE7615 Deep Learning, Fall 2026. Kaiyuan Lai (lai.kaiy@northeastern.edu).
 ## Problem and intended user
 
 **Research question.** Using only minute-level OHLCV and MBP-1 data and the technical indicators computed from
-them, can deep learning estimate the probability and duration of short-term trend persistence in XAU/USD accurately
-enough to achieve a positive expected return per trade after transaction costs?
+them, can deep learning estimate the probability of short-term trend persistence in gold futures (COMEX GC), that is,
+the probability of reaching take-profit first, stop-loss first, or neither within holding periods of 15, 30 and
+60 minutes, accurately enough to achieve a positive expected return per trade after transaction costs?
 
-**Target product and users.** The target product is a trading-signal tool: it receives 1-minute bars in real time
-through a market-data API and, at the close of each bar, outputs the probabilities of the possible trade outcomes and
+**Target product and users.** The target product is a trading-signal tool: it receives 1-minute bars and top-of-book (MBP-1)
+data in real time through a market-data API and, at the close of each bar, outputs the probabilities of the possible trade outcomes and
 a suggested action (long, short or no trade). It is a research prototype for retail and institutional traders of
 gold-related products, not a system for executing live trades. The project focuses on a single deep and highly
 liquid market rather than several assets, because a model for one market is easier to validate rigorously within one
