@@ -32,21 +32,21 @@ s.to_csv(f"{OUT}/示例_10秒逐笔成交_{T0:%Y%m%d_%H%M%S}.csv")
 T = {
     "zh": {"dir": OUT, "font": ["Hiragino Sans GB", "Arial Unicode MS"],
            "spot": "XAU/USD 现货（Twelve Data）", "gc": "GC 主力期货（Databento）", "price": "价格（美元/盎司）",
-           "t1": f"图 1　{DAY}（北京时间）现货与期货价格、GC 每分钟成交量与 Delta",
+           "t1": f"{DAY}（北京时间）现货与期货价格、GC 每分钟成交量与 Delta",
            "vol": "GC 成交量（手/分钟）", "buy": "主动买占优（Delta > 0）", "sell": "主动卖占优（Delta < 0）",
            "delta": "Delta（手/分钟）", "bj": "北京时间", "f1": "图1_一天的价格_成交量_Delta.png",
            "ask": "卖一价（Ask）", "bid": "买一价（Bid）", "tb": "主动买成交", "ta": "主动卖成交",
-           "t2": (f"图 2　GC 逐笔成交 10 秒片段：{T0:%Y-%m-%d %H:%M:%S} – {T1:%H:%M:%S}（北京时间，美国 8:30 ET）"
+           "t2": (f"GC 逐笔成交 10 秒片段：{T0:%Y-%m-%d %H:%M:%S} – {T1:%H:%M:%S}（北京时间，美国 8:30 ET）"
                   f"\n共 {len(s)} 笔、{int(s['size'].sum())} 手；点的大小代表成交手数"),
            "f2": "图2_10秒逐笔成交片段.png"},
     "en": {"dir": f"{OUT}/English", "font": ["Arial", "Helvetica"],
            "spot": "XAU/USD spot (Twelve Data)", "gc": "GC front-month futures (Databento)", "price": "Price (USD per ounce)",
-           "t1": f"Figure 1. {DAY} (Beijing time): spot and futures prices, GC volume and delta per minute",
+           "t1": f"{DAY} (Beijing time): spot and futures prices, GC volume and delta per minute",
            "vol": "GC volume (lots per minute)", "buy": "Buyer-initiated dominates (delta > 0)",
            "sell": "Seller-initiated dominates (delta < 0)", "delta": "Delta (lots per minute)", "bj": "Beijing time",
            "f1": "Fig1_one_day_price_volume_delta.png",
            "ask": "Best ask", "bid": "Best bid", "tb": "Buyer-initiated trade", "ta": "Seller-initiated trade",
-           "t2": (f"Figure 2. GC trades in a 10-second window: {T0:%Y-%m-%d %H:%M:%S} – {T1:%H:%M:%S} (Beijing time, 8:30 ET)"
+           "t2": (f"GC trades in a 10-second window: {T0:%Y-%m-%d %H:%M:%S} – {T1:%H:%M:%S} (Beijing time, 8:30 ET)"
                   f"\n{len(s)} trades, {int(s['size'].sum())} lots; marker size shows the number of lots"),
            "f2": "Fig2_10_second_trades.png"},
 }

@@ -31,7 +31,7 @@ COL = {"raw": "#2a78d6", "intraday": "#eb6834", "atr": "#52514e"}
 T = {
     "zh": {
         "file": "中文/图7_相对变化率自相关.png",
-        "title": "图 7　1 分钟相对变化率的自相关（训练集，滞后 1–240 分钟）",
+        "title": "1 分钟相对变化率的自相关（训练集，滞后 1–240 分钟）",
         "a": "(a) 相对变化率 r = ln(本分钟收盘价 ÷ 上一分钟收盘价)（涨跌方向）", "b": "(b) 相对变化率绝对值 |r|（波动大小）",
         "x": "滞后 k（分钟）", "y": "自相关系数",
         "band": "95% 显著性范围（±1.96/√N）",
@@ -41,7 +41,7 @@ T = {
     },
     "en": {
         "file": "English/Fig7_relative_change_autocorrelation.png",
-        "title": "Figure 7. Autocorrelation of 1-minute relative changes (training set, lags 1–240 min)",
+        "title": "Autocorrelation of 1-minute relative changes (training set, lags 1–240 min)",
         "a": "(a) Relative change r = ln(close ÷ previous close) (direction)", "b": "(b) Absolute relative change |r| (volatility)",
         "x": "Lag k (minutes)", "y": "Autocorrelation",
         "band": "95% significance band (±1.96/√N)",
