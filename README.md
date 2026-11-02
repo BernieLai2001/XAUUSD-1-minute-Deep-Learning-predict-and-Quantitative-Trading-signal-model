@@ -1,5 +1,7 @@
 # Short-Term Gold Futures Trade Outcome Prediction from Minute-Level Market Data
 
+中文版：[README_zh.md](README_zh.md)
+
 IE7615 Deep Learning, Fall 2026. Kaiyuan Lai (lai.kaiy@northeastern.edu).
 
 ## Problem and intended user
