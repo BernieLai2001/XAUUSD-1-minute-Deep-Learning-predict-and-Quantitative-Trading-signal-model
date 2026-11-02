@@ -9,16 +9,16 @@
 import numpy as np
 import tensorflow as tf
 
-from pathlib import Path
-P = str(Path(__file__).resolve().parent.parent)
+from gold_dl.config import CFG, path
 
-L = 60
-BATCH = 256
-SEED = 42
+# 回看窗口、批量、随机种子都从 config.yaml 读
+L = CFG["pipeline"]["lookback"]
+BATCH = CFG["pipeline"]["batch_size"]
+SEED = CFG["training"]["seed"]
 
 
-def load_arrays(path=f"{P}/model_data/model_arrays.npz"):
-    return dict(np.load(path, allow_pickle=False))
+def load_arrays(npz=None):
+    return dict(np.load(npz or path("model_arrays"), allow_pickle=False))
 
 
 def make_dataset(arr, split, batch=BATCH, lookback=L, seed=SEED):

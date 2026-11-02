@@ -10,8 +10,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 
-sys.path.insert(0, os.path.dirname(__file__))
-from data_pipeline import BATCH, L, SEED, load_arrays, make_dataset, masked_sparse_ce
+from gold_dl.data_pipeline import BATCH, L, SEED, load_arrays, make_dataset, masked_sparse_ce
 
 from pathlib import Path
 P = str(Path(__file__).resolve().parent.parent)

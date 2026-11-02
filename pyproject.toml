@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gold-dl"
+version = "0.1.0"
+description = "Input pipeline and shared code for gold futures (GC) 1-minute trade outcome prediction"
+requires-python = ">=3.10"
+# Package versions are pinned in requirements-processing.txt and requirements-train.txt,
+# because the processing and training environments need different versions.
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]

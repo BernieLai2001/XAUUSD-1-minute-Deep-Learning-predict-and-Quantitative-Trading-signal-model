@@ -50,6 +50,17 @@ pip install -r requirements-processing.txt
 pip install -r requirements-train.txt
 ```
 
+Then, in the training environment, install the project's own package `gold_dl` (in `src/`) in editable mode, so
+scripts and notebooks can `import gold_dl`:
+
+```bash
+pip install -e .
+```
+
+`gold_dl.config` reads `config.yaml` and resolves every path relative to the project root;
+`gold_dl.data_pipeline` holds the tf.data pipeline (`make_dataset`) and the masked loss used by every split.
+On Kaggle, `kaggle_timing.py` carries its own copy of the pipeline so that only one file has to be uploaded.
+
 ## Platform
 
 - **Development and smoke tests:** Apple M4 Pro, 24 GB, TensorFlow with the Metal GPU.
@@ -193,7 +204,9 @@ project/
 ├── config.yaml                   all settings: paths, split, labels, lookback, batch size, seed
 ├── requirements-processing.txt   pinned packages for steps 1–4 and figures
 ├── requirements-train.txt        pinned packages for steps 5–6
-├── scripts/            processing, labelling, pipeline and figure scripts (to be moved into src/)
+├── pyproject.toml                makes src/gold_dl installable (pip install -e .)
+├── src/gold_dl/        reusable package: config.py (paths and settings), data_pipeline.py (tf.data pipeline, loss)
+├── scripts/            processing, labelling, check and figure scripts
 ├── tests/              test_split.py: no minute in two sets, time order, 60-minute gaps
 ├── 数据说明/            report notes, figures and tables (Chinese and English figures)
 ├── GC_mbp1/            raw MBP-1 files            (not committed)
@@ -203,7 +216,7 @@ project/
 └── model_data/         model_arrays.npz           (not committed)
 ```
 
-<!-- TODO: update this tree after adding src/, notebooks/ and tests/. config.yaml lists the current values, but the scripts do not read it yet. -->
+<!-- TODO: add notebooks/ to this tree. Only gold_dl and tests/ read config.yaml so far; the scripts still keep their own constants. -->
 
 ## Licence
 
