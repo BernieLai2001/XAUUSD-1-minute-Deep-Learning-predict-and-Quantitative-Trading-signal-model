@@ -227,7 +227,7 @@ for lang, tx in TXT.items():
         for i in range(d.shape[0]):
             for j in range(d.shape[1]):
                 v = d.iat[i, j]
-                ax.text(j, i, "—" if np.isnan(v) else f"{v:+.3f}", ha="center", va="center", fontsize=7.5, color=INK)
+                ax.text(j, i, "—" if np.isnan(v) else f"{v:+.3f}", ha="center", va="center", fontsize=7.5, color="white" if abs(v) > 0.6 * lim else INK)
         ax.grid(False); ax.set_xlabel(tx["wk"])
         fig.colorbar(im, ax=ax, fraction=0.03)
         ax.set_title(tx["heat"].format(nm[m]), loc="left", color=INK, fontsize=10)

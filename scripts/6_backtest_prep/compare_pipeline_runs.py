@@ -42,7 +42,10 @@ for sub, f in [("features", "features_1min.parquet"), ("features", "features_1mi
     a = pd.read_parquet(path(sub, f))
     b = pd.read_parquet(O / sub / f)
     b = b[b.index < a.index.max() + pd.Timedelta(minutes=1)]
-    report(f, same_frame(a, b))
+    keep = a.index < cut   # 隔离期里的行不被任何样本使用；原下载最后一分钟在文件末尾被截断，加入新数据后会变完整
+    report(f"{f}（{cut} 之前）", same_frame(a[keep], b[keep]))
+    n_diff = sum(not same_frame(a[~keep].iloc[[i]], b[~keep].iloc[[i]]) for i in range((~keep).sum()))
+    print(f"       {f}：隔离期内不同的行数 = {n_diff}")
 
 for f in ["labels_all.parquet", "labels_default.parquet"]:
     a = pd.read_parquet(path("labels", f))
@@ -63,7 +66,9 @@ for sub, f in [("features", "ofi_depth_seasonal_factors.csv"), ("features", "tai
 # 3. 模型数组：训练集、验证集完全一致；原测试集只少了隔离期里的样本
 A, Bz = np.load(path("model_arrays")), np.load(O / "model_data" / "model_arrays.npz")
 n_old = len(A["time_ns"])
-report("model_arrays: X_all（原有行）", np.array_equal(A["X_all"], Bz["X_all"][:n_old]) and np.array_equal(A["time_ns"], Bz["time_ns"][:n_old]))
+r_old = A["time_ns"] < cut.value
+report(f"model_arrays: X_all（原有行，{cut} 之前）", np.array_equal(A["X_all"][r_old], Bz["X_all"][:n_old][r_old], equal_nan=True)
+       and np.array_equal(A["time_ns"], Bz["time_ns"][:n_old]))
 for s in ["train", "val"]:
     report(f"model_arrays: {s} 样本和标签", np.array_equal(A[f"end_{s}"], Bz[f"end_{s}"]) and np.array_equal(A[f"y_{s}"], Bz[f"y_{s}"]))
 ta = A["time_ns"][A["end_test"]]
