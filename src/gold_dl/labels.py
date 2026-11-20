@@ -22,7 +22,9 @@ K_SL = CFG["labels"]["k_sl_grid"]
 RR = CFG["labels"]["rr_grid"]
 HS = CFG["labels"]["holding_min"]
 TICK = CFG["data"]["tick"]
-TRAIN_FRAC, VAL_FRAC = CFG["split"]["train_frac"], CFG["split"]["val_frac"]   # 按时间顺序：训练、验证，其余为测试
+# 按时间顺序：训练、验证、测试、测试集 B；分界时刻固定写在 config.yaml（val_start、test_start、test_b_start，北京时间），
+# 前两个是原始数据有成交分钟的 70% 和 85% 处，固定下来后，加入新数据（测试集 B）不会移动分界
+T_VAL, T_TEST, T_TEST_B = (pd.Timestamp(CFG["split"][k]) for k in ["val_start", "test_start", "test_b_start"])
 GAP = CFG["split"]["gap_min"]      # 每个分界处删掉的分钟数，避免前一段的标签用到后一段的价格
 FFILL_LIMIT = CFG["cleaning"]["quote_ffill_limit_min"]   # 没有报价更新的分钟，最多沿用前几分钟的盘口
 WIDE_MULT = CFG["cleaning"]["wide_spread_mult"]          # 极端点差阈值 = 训练集点差中位数的倍数
@@ -115,13 +117,13 @@ def build_labels(out, pre_roll_days=None):
         return np.where(any_, hit.argmax(axis=1), 10_000)
 
 
-    n_train, n_val = int(N * TRAIN_FRAC), int(N * VAL_FRAC)
-    t_val, t_test = feat.index[n_train], feat.index[n_train + n_val]
+    t_val, t_test = T_VAL, T_TEST
     gap = pd.Timedelta(minutes=GAP)
     split = np.full(N, "", dtype=object)
     split[feat.index < t_val - gap] = "train"
     split[(feat.index >= t_val) & (feat.index < t_test - gap)] = "val"
-    split[feat.index >= t_test] = "test"
+    split[(feat.index >= t_test) & (feat.index < T_TEST_B - gap)] = "test"
+    split[feat.index >= T_TEST_B] = "test_b"   # 测试集 B：只在 M6 最终评估时用一次，下面的统计表都不含它
     is_train = split == "train"
     labels = {}
     rows = []
@@ -177,12 +179,13 @@ def build_labels(out, pre_roll_days=None):
     wide = entry_ok & (spread_ticks > thr)   # 换月前几天的标签已为空，这里仍标出，便于统计
     idx = feat.index
     et = bj_to_et(idx)
-    sp = pd.DataFrame({"wide": wide[entry_ok], "hour_bj": idx.hour[entry_ok], "hour_et": et.hour[entry_ok]})
+    seen = entry_ok & (split != "test_b")    # 统计表不含测试集 B，避免看到它的任何分布
+    sp = pd.DataFrame({"wide": wide[seen], "hour_bj": idx.hour[seen], "hour_et": et.hour[seen]})
     by_hour = sp.groupby("hour_et").agg(minutes=("wide", "size"), wide=("wide", "sum"))
     by_hour["wide_share"] = by_hour["wide"] / by_hour["minutes"]
     by_hour["hour_bj"] = (by_hour.index + 12) % 24  # 仅作参考，夏令时为 +12，冬令时为 +13
     by_hour.to_csv(f"{OUT}/wide_spread_by_hour_et.csv", float_format="%.4f")
-    by_day = pd.Series(wide, index=idx).groupby(idx.date).sum().sort_values(ascending=False)
+    by_day = pd.Series(wide & seen, index=idx).groupby(idx.date).sum().sort_values(ascending=False)
     by_day[by_day > 0].to_csv(f"{OUT}/wide_spread_by_day.csv", header=["wide_minutes"])
 
     out = pd.DataFrame(labels, index=feat.index).astype("Int8")
@@ -195,9 +198,12 @@ def build_labels(out, pre_roll_days=None):
     out.to_parquet(f"{OUT}/labels_all.parquet")
     save_run_config(OUT, "make_labels")
 
-    print(f"rows {N}, split counts", pd.Series(split).value_counts().to_dict(), "val starts", t_val, "test starts", t_test)
-    print(f"entry ok {entry_ok.mean():.4f}, pre-roll {pre_roll_days}d rows {pre_roll.sum()} ({pre_roll.mean():.4f}), by split",
-          pd.Series(pre_roll).groupby(split).mean().round(4).to_dict())
+    print(f"rows {N}, split counts", pd.Series(split).value_counts().to_dict(), "val starts", t_val, "test starts", t_test,
+          "test B starts", T_TEST_B)
+    known = split != "test_b"
+    print(f"entry ok {entry_ok[known].mean():.4f}, pre-roll {pre_roll_days}d rows {pre_roll[known].sum()}, by split (test set B not shown)",
+          pd.Series(pre_roll[known]).groupby(split[known]).mean().round(4).to_dict())
     print(f"fixed cost round trip {COST_RT_PER_OZ:.4f} USD/oz")
-    print(f"spread median (train) {med:.1f} ticks, threshold {thr:.1f} ticks, wide minutes {wide.sum()} ({wide.sum()/entry_ok.sum():.4%})")
+    print(f"spread median (train) {med:.1f} ticks, threshold {thr:.1f} ticks, wide minutes (test set B not counted) "
+          f"{(wide & seen).sum()} ({(wide & seen).sum() / seen.sum():.4%})")
     print(combo.to_string())

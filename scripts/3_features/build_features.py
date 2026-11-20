@@ -213,7 +213,7 @@ roll_t = out.index[(out["instrument_id"] != out["instrument_id"].shift()).to_num
 nxt = np.searchsorted(roll_t.values, out.index.values, side="right")
 next_roll = pd.DatetimeIndex(np.where(nxt < len(roll_t), roll_t.values[np.minimum(nxt, len(roll_t) - 1)], np.datetime64("NaT")))
 pre_roll = np.asarray((next_roll - out.index) <= PRE_ROLL)   # 之后没有换月时为 NaT，比较结果为 False
-train_end = trade_rows[int(len(trade_rows) * CFG["split"]["train_frac"])] - pd.Timedelta(minutes=CFG["split"]["gap_min"])
+train_end = pd.Timestamp(CFG["split"]["val_start"]) - pd.Timedelta(minutes=CFG["split"]["gap_min"])   # 与标签的训练集相同
 fit_rows = (out.index < train_end) & (out["is_filled"] == 0).to_numpy() & ~np.asarray(pre_roll)
 
 # OFI 日内时段调整：时段键 = 开盘后第 k 分钟（k = 0–4，开盘 = 与上一根 K 线间隔 > 30 分钟，即每日休市或周末后）；

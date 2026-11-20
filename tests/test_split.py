@@ -10,7 +10,7 @@ from gold_dl.config import CFG, path
 LABELS = path("labels", "labels_default.parquet")
 ARRAYS = path("model_arrays")
 GAP = pd.Timedelta(minutes=CFG["split"]["gap_min"])
-SPLITS = ["train", "val", "test"]
+SPLITS = ["train", "val", "test", "test_b"]   # test_b：M4 新下载的测试集 B，数据里没有时自动跳过
 
 
 @pytest.fixture(scope="module")
@@ -28,7 +28,8 @@ def test_each_minute_in_one_set(split):
 
 def test_sets_in_time_order_with_gap(split):
     t = {s: split.index[split == s] for s in SPLITS}
-    for a, b in [("train", "val"), ("val", "test")]:
+    pairs = [("train", "val"), ("val", "test")] + ([("test", "test_b")] if len(t["test_b"]) else [])
+    for a, b in pairs:
         assert len(t[a]) > 0 and len(t[b]) > 0
         # 后一个集合的第一分钟，至少比前一个集合的最后一分钟晚 gap_min + 1 分钟，中间正好空出 gap_min 分钟
         assert t[b].min() - t[a].max() > GAP, f"{a} 与 {b} 之间的间隔不足 {GAP}"
@@ -39,7 +40,9 @@ def test_samples_follow_the_split(split):
     if not ARRAYS.exists():
         pytest.skip(f"{ARRAYS} 不存在，先运行 export_model_arrays.py")
     arr = np.load(ARRAYS)
-    t = {s: arr["time_ns"][arr[f"end_{s}"]] for s in SPLITS}
-    ends = np.concatenate([arr[f"end_{s}"] for s in SPLITS])
+    have = [s for s in SPLITS if f"end_{s}" in arr.files]
+    t = {s: arr["time_ns"][arr[f"end_{s}"]] for s in have}
+    ends = np.concatenate([arr[f"end_{s}"] for s in have])
     assert len(np.unique(ends)) == len(ends)
-    assert t["train"].max() < t["val"].min() and t["val"].max() < t["test"].min()
+    for a, b in zip(have[:-1], have[1:]):
+        assert t[a].max() < t[b].min(), f"{a} 与 {b} 的样本时间有重叠"

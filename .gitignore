@@ -65,3 +65,9 @@ venv/
 
 # personal change report, not committed
 /数据说明/代码整理改动报告.docx
+
+# M4 results: checkpoints, training backups and TensorBoard logs stay local (predictions are *.npz, already ignored)
+/results/**/backup/
+/results/**/tensorboard/
+/results/**/*.keras
+/results/m4/logs/

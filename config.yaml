@@ -11,6 +11,8 @@ paths:
   features: features                      # [build_features.py]
   labels: labels                          # [make_labels.py]
   model_arrays: model_data/model_arrays.npz   # [export_model_arrays.py]
+  model_data: model_data                  # trade_outcomes.npz [make_trade_outcomes.py]
+  results: results                        # M4 runs, predictions, tables and figures [run_baseline.py, summarize_m4.py]
   notes: 数据说明
   databento_key: databento_key.txt        # not committed
   twelvedata_key: twelvedata_key.txt      # not committed; discarded spot data only [fetch_xauusd.py]
@@ -20,6 +22,8 @@ data:
   symbol: GC.v.0
   start: "2025-09-28"          # download start date, inclusive (quoted so YAML keeps it a string)
   end: "2026-09-29"            # download end date, exclusive
+  test_b_start: "2026-09-29"   # test set B (new data, M4): starts where the original download ends, so the timeline is continuous
+  test_b_end: "2026-11-19"     # exclusive [databento_gc_mbp1_test_b.py]
   tick: 0.1                    # USD per tick [gold_dl/labels.py, build_features.py, build_gc_book_1min.py, build_gc_spread_tw_1min.py]
 
 cleaning:
@@ -34,6 +38,11 @@ split:                         # by time, in order [gold_dl/labels.py; build_fea
   val_frac: 0.15
   test_frac: 0.15              # the rest after train and val; checked to sum to 1
   gap_min: 60                  # minutes removed at each boundary, at least the longest holding period
+  # Fixed boundaries (Beijing time). val_start and test_start are the 70% and 85% points of the trading minutes of the
+  # original download (from train_frac / val_frac); they are fixed so that adding new data (test set B) does not move them.
+  val_start: "2026-06-12 03:12"
+  test_start: "2026-08-06 04:54"
+  test_b_start: "2026-09-29 08:00"   # = data.test_b_start 00:00 UTC; the test set ends gap_min minutes before it
 
 labels:                        # triple barrier [gold_dl/labels.py, save_default_labels.py, export_model_arrays.py]
   holding_min: [15, 30, 60]
@@ -61,5 +70,21 @@ pipeline:                      # [gold_dl/data_pipeline.py; lookback also export
 
 training:
   seed: 42                     # [gold_dl/data_pipeline.py]
-  max_epochs: 30               # for M4 training (not used by any script yet)
-  mixed_precision: true        # for M4 training (not used by any script yet)
+  seeds: [42, 43, 44]          # M4: every model with randomness is trained once per seed [run_baseline.py]
+  max_epochs: 30               # deep baselines [gold_dl/models/deep.py]
+  patience: 5                  # early stopping on the first half of the validation set
+  learning_rate: 0.001
+  mixed_precision: true        # Kaggle only; local Metal runs use float32
+
+evaluation:                    # [gold_dl/evaluation.py]
+  # The validation set is split by CME trading day into two halves. First half: model selection,
+  # early stopping, the dropout decision, probability calibration and the trading threshold theta.
+  # Second half: every reported number.
+  report_half: second
+
+strategy:                      # decision layer and backtest [gold_dl/strategy.py]
+  fee_per_side_usd: 1.66       # CME exchange fee 1.65 + regulatory fee 0.01, per contract per side
+  commission_per_side_usd: 5.0 # assumed per side (the M4 plan says "5 USD per 100 oz"); round trip 13.32 USD per contract
+  contract_oz: 100
+  theta_grid_r: [0, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3]   # trading threshold candidates, in R
+  delta_r: 0.1                 # smallest edge to detect; minimum trades n = (2 x sd / delta)^2

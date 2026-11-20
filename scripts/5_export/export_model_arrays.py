@@ -38,11 +38,14 @@ out = {"X_all": X, "seg_id": seg.astype(np.int32), "feature_names": np.array(fea
        "mean": scaler.reindex(feat_cols)["train_mean"].fillna(0).to_numpy(np.float32),
        "std": scaler.reindex(feat_cols)["train_std"].fillna(1).to_numpy(np.float32),
        "log_feature": np.isin(feat_cols, LOG_FEATURES)}
-for s in ["train", "val", "test"]:
+for s in ["train", "val", "test"] + (["test_b"] if (split == "test_b").any() else []):
     end = np.where(base & (split == s))[0]
     out[f"end_{s}"] = end.astype(np.int64)
     out[f"y_{s}"] = y[end]
-    print(s, "samples", len(end), "label NA share per head", (y[end] == -1).mean(axis=0).round(4))
+    if s == "test_b":   # 测试集 B 只导出，不打印任何统计
+        print("test_b exported (not inspected)")
+    else:
+        print(s, "samples", len(end), "label NA share per head", (y[end] == -1).mean(axis=0).round(4))
 np.savez(path("model_arrays"), **out)
 print("X_all", X.shape, X.dtype, f"{X.nbytes / 1e6:.1f} MB")
 save_run_config(path("model_arrays").parent, "export_model_arrays")

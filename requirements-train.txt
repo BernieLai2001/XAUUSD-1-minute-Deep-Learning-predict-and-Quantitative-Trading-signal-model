@@ -8,4 +8,6 @@ pandas==2.3.3
 scipy==1.15.3
 matplotlib==3.10.8
 PyYAML==6.0.2
+scikit-learn==1.7.2   # M4 logistic regression and metrics
+lightgbm==4.6.0       # M4 LightGBM baseline
 pytest==8.3.4

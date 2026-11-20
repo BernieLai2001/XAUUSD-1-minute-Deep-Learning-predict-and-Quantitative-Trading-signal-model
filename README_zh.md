@@ -190,6 +190,44 @@ python kaggle_timing.py
 python kaggle_timing.py --L 120
 ```
 
+**7. M4 基准（第一条在处理数据的环境运行，其余在训练环境运行）**
+
+```bash
+python scripts/6_backtest_prep/make_trade_outcomes.py
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model naive
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model logreg
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model lgbm
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model conv1d
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model lstm
+```
+
+```bash
+python scripts/7_models/summarize_m4.py
+```
+
+`make_trade_outcomes.py` 为每个样本、每个头保存"在这一分钟开仓"的平仓分钟和盈亏（规则与标签相同，并与
+`labels_default.parquet` 逐个核对）。每条 `run_baseline.py` 命令完成选设置、训练最终模型（训练有随机性时用 3 个种子）、
+概率校准和验证集评估。验证集按 CME 交易日分成前后两半：所有选择（输入方式、超参数、早停、dropout、温度缩放、开仓阈值 θ）
+只用前一半，报告的数字全部来自后一半。每次尝试的设置、种子、分数和耗时都追加到 `results/m4/runs.jsonl`；每个种子的
+最终预测、指标和交易记录在 `results/m4/<模型>/seed<种子>/`。训练备份和 TensorBoard 记录（`backup`、`tensorboard`）
+只留在本地，不提交；深度模型训练中断后，重新运行同一条命令会从上次的 epoch 接着训练。
+`summarize_m4.py` 把表写到 `results/m4/tables/`，图写到 `results/m4/figures/`。
+
 ### 报告中各项结果的来源
 
 | 报告内容 | 脚本 | 输出 |

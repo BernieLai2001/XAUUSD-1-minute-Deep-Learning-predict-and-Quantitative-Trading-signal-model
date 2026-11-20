@@ -6,4 +6,9 @@
 #   indicators：ATR、安全除法
 #   labels：三重障碍标签（make_labels.py 和 make_labels_with_preroll_check.py 调用）
 #   plotting：报告图的颜色、字体和 matplotlib 样式
+#   trade_outcomes：默认组合下每个样本开仓后的平仓分钟和盈亏（策略层回测用）
+#   evaluation：验证集两半、朴素基准、温度缩放校准、模型层指标
+#   strategy：期望收益决策层、回测、θ 选择、交易次数下限
+#   experiment：M4 每次运行的记录、最终评估和存盘
+#   models：朴素、逻辑回归、LightGBM、Conv1D、单层 LSTM
 __version__ = "0.1.0"

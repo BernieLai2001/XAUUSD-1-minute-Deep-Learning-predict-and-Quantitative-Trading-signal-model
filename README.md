@@ -204,6 +204,48 @@ python kaggle_timing.py
 python kaggle_timing.py --L 120
 ```
 
+**7. M4 baselines (step 6 in the processing environment, the rest in the training environment)**
+
+```bash
+python scripts/6_backtest_prep/make_trade_outcomes.py
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model naive
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model logreg
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model lgbm
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model conv1d
+```
+
+```bash
+python scripts/7_models/run_baseline.py --model lstm
+```
+
+```bash
+python scripts/7_models/summarize_m4.py
+```
+
+`make_trade_outcomes.py` stores, for every sample and head, the exit minute and the profit or loss of a trade
+opened at that minute (same rules as the labels; checked against `labels_default.parquet`). Each
+`run_baseline.py` command selects its settings, trains the final model (3 seeds where training is random),
+calibrates the probabilities and evaluates on the validation set. The validation set is split by CME trading
+day into two halves: the first half is used for every choice (input format, hyperparameters, early stopping,
+dropout, temperature scaling, trading threshold theta), and every reported number comes from the second half.
+Every attempt is appended to `results/m4/runs.jsonl` with its settings, seed, scores and run time; the final
+predictions, metrics and trades of each seed are in `results/m4/<model>/seed<seed>/`. Training backups and
+TensorBoard logs (`results/m4/<model>/seed<seed>/backup`, `tensorboard`) stay local and are not committed;
+an interrupted deep run continues from its last epoch when the same command is run again.
+`summarize_m4.py` writes the tables in `results/m4/tables/` and the figures in `results/m4/figures/`.
+
 ### Where each result in the report comes from
 
 | Report content | Script | Output |
