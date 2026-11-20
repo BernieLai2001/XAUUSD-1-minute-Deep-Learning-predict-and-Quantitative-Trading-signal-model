@@ -5,6 +5,7 @@
 # 训练：屏蔽空标签的交叉熵，Adam，批量 256，最多 max_epochs 个 epoch；按验证集前一半（val1）的损失早停，
 #   耐心值 patience，停止后恢复 val1 损失最低那一轮的权重；不用类别权重
 #   BackupAndRestore：训练中断后重新运行同一命令，从上次的 epoch 接着训练；TensorBoard：记录训练曲线
+#   训练结束后把最终模型存成 out_dir/model.keras（检查点）
 import os
 import time
 
@@ -16,6 +17,18 @@ from gold_dl.config import CFG
 from gold_dl.data_pipeline import make_dataset, masked_sparse_ce
 
 TR = CFG["training"]
+
+
+def hardware():
+    """训练用的硬件；在 NVIDIA GPU（Kaggle T4）上按 config 打开混合精度，Apple Metal 上用 float32"""
+    gpus = tf.config.list_physical_devices("GPU")
+    if not gpus:
+        return "CPU, float32"
+    name = tf.config.experimental.get_device_details(gpus[0]).get("device_name", "GPU")
+    if tf.test.is_built_with_cuda() and TR["mixed_precision"]:
+        keras.mixed_precision.set_global_policy("mixed_float16")
+        return f"{name}, mixed precision"
+    return f"{name} (Apple Metal), float32" if not tf.test.is_built_with_cuda() else f"{name}, float32"
 
 
 def build(name, n_feat, lookback, n_heads=6, dropout=0.0):
@@ -55,6 +68,7 @@ def train(name, arr, seed, out_dir, dropout=0.0):
           keras.callbacks.BackupAndRestore(os.path.join(out_dir, "backup")),
           keras.callbacks.TensorBoard(os.path.join(out_dir, "tensorboard"))]
     hist = model.fit(ds_tr, validation_data=ds_v1, epochs=TR["max_epochs"], callbacks=cb, verbose=2)
+    model.save(os.path.join(out_dir, "model.keras"))   # 检查点：恢复了验证损失最低那一轮的权重；不放进 Git（见 README）
     h = {k: [float(v) for v in vals] for k, vals in hist.history.items()}
     best = int(np.argmin(h["val_loss"]))
     info = {"epochs_run": len(h["val_loss"]), "best_epoch": best + 1, "best_val1_loss": h["val_loss"][best],

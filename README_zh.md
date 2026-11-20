@@ -227,6 +227,27 @@ python scripts/7_models/summarize_m4.py
 最终预测、指标和交易记录在 `results/m4/<模型>/seed<种子>/`。训练备份和 TensorBoard 记录（`backup`、`tensorboard`）
 只留在本地，不提交；深度模型训练中断后，重新运行同一条命令会从上次的 epoch 接着训练。
 `summarize_m4.py` 把表写到 `results/m4/tables/`，图写到 `results/m4/figures/`。
+`error_analysis_m4.py`（处理环境）生成混淆矩阵、每类得分、错误分类、代表性错误样本，以及 wide_spread 和数据质量下降日的检查。
+
+**在 Kaggle（M5 使用的平台）上训练深度基准。** 报告中 Conv1D 和单层 LSTM 的结果、训练时间和检查点都来自 Kaggle Notebook
+（GPU T4，混合精度）。添加一个私有数据集，内含 `model_data/model_arrays.npz` 和 `model_data/trade_outcomes.npz`，打开 Internet，然后运行：
+
+```bash
+git clone --depth 1 https://github.com/BernieLai2001/XAUUSD-1-minute-Deep-Learning-predict-and-Quantitative-Trading-signal-model.git project
+```
+
+```bash
+pip install -q -e project --no-deps
+```
+
+```bash
+cd project && python scripts/7_models/kaggle_m4_deep.py
+```
+
+**检查点的位置。** 模型检查点不放进 Git。每次深度模型训练都会把 `model.keras`（验证损失最低那一轮的权重）存到
+`results/m4/<模型>/seed<种子>/`。报告中这些运行的检查点在私有 Kaggle Notebook `gold-dl-m4-deep-baselines` 的输出里
+（Kaggle → Code → Your Work → Output）：`project/results/m4/<模型>/seed<种子>/model.keras`。同一个输出里的
+`m4_deep_results.zip` 下载后在项目根目录解压，就得到结果文件。
 
 ### 报告中各项结果的来源
 
@@ -239,6 +260,8 @@ python scripts/7_models/summarize_m4.py
 | EDA 图 1–8 | `plot_eda_figures.py` | `数据说明/EDA图/`, `eda_stats.txt` |
 | 自相关（图 7） | `plot_return_acf.py` | `数据说明/EDA图/`, `acf_stats.txt` |
 | 管道批次、冒烟测试、本地计时 | `section6_pipeline_checks.py`, `time_cnn_bilstm.py` | `数据说明/第6节/` |
+| M4 基准、结果表和图 | `run_baseline.py`, `summarize_m4.py`, `error_analysis_m4.py` | `results/m4/` |
+| M4 深度基准在 Kaggle 上的训练（计时、检查点） | `kaggle_m4_deep.py` | Kaggle Notebook 输出；`results/m4/` |
 | Kaggle 计时 | `kaggle_timing.py` | `kaggle_timing.json`；复制到 `数据说明/第6节/kaggle_timing_T4.csv` |
 | 单变量特征检查、每月类别占比 | `section7_checks.py`, `check_monthly_sl_drift.py` | `数据说明/第7节_特征单变量检查.csv`，打印输出 |
 

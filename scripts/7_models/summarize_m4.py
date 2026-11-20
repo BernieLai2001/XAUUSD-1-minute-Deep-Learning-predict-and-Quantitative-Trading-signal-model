@@ -61,7 +61,7 @@ def train_time(m):
         return "no training"
     if "epoch_seconds_mean" in ex:
         return (f"{ms([r['extra']['epoch_seconds_mean'] for r in runs[m]], '{:.1f}')} s/epoch, "
-                f"{ms([r['extra']['epochs_run'] for r in runs[m]], '{:.0f}')} epochs, local Metal")
+                f"{ms([r['extra']['epochs_run'] for r in runs[m]], '{:.0f}')} epochs, {ex.get('hardware', 'local Apple Metal GPU, float32')}")
     return f"{ms([r['extra']['train_seconds'] / 60 for r in runs[m]], '{:.1f}')} min, CPU (12 threads)"
 
 

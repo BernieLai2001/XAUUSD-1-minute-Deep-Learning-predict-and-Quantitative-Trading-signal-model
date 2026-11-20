@@ -1,0 +1,7 @@
+model,all,without_wide_window,only_wide_window,n_all,n_wide_window,n_wide_entry,n_degraded_day_val2,degraded_days_total
+logreg,0.0310,0.0291,0.0689,24587,1110,2,0,7
+lgbm,0.0396,0.0386,0.0604,24587,1110,2,0,7
+conv1d,0.0169,0.0172,0.0113,24587,1110,2,0,7
+lstm,0.0273,0.0264,0.0444,24587,1110,2,0,7
+conv1d_do02,0.0207,0.0207,0.0207,24587,1110,2,0,7
+lstm_do02,0.0301,0.0299,0.0354,24587,1110,2,0,7

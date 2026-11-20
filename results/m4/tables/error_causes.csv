@@ -1,0 +1,7 @@
+head,pred_tp_share_with_trend,all_share_with_trend,A_share_with_trend,tp_precision_with_trend,tp_precision_against_trend,error_rate_high_vol,error_rate_other,timeout_true_high_vol,timeout_true_other
+long_H15,0.7814,0.4787,0.6923,0.3062,0.1622,0.5856,0.5138,0.3060,0.1713
+long_H30,0.6791,0.4794,0.6626,0.3665,0.3675,0.5995,0.5331,0.3271,0.1744
+long_H60,0.6248,0.4781,0.6146,0.4116,0.4121,0.6252,0.5401,0.3603,0.1795
+short_H15,0.5478,0.5150,0.5420,0.3831,0.3577,0.5832,0.5355,0.3032,0.1773
+short_H30,0.5089,0.5143,0.4932,0.3760,0.3723,0.5858,0.5625,0.3207,0.1784
+short_H60,0.5388,0.5159,0.5019,0.3911,0.3733,0.6055,0.5697,0.3555,0.1828

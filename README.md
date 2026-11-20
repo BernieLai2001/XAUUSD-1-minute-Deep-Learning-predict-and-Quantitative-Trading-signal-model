@@ -245,6 +245,30 @@ predictions, metrics and trades of each seed are in `results/m4/<model>/seed<see
 TensorBoard logs (`results/m4/<model>/seed<seed>/backup`, `tensorboard`) stay local and are not committed;
 an interrupted deep run continues from its last epoch when the same command is run again.
 `summarize_m4.py` writes the tables in `results/m4/tables/` and the figures in `results/m4/figures/`.
+`error_analysis_m4.py` (processing environment) adds the confusion matrices, per-class scores, error types,
+representative error samples and the wide-spread / degraded-day check.
+
+**Deep baselines on Kaggle (the M5 platform).** The reported Conv1D and LSTM runs, their timing and their
+checkpoints come from a Kaggle notebook (GPU T4, mixed precision). Add a private dataset with
+`model_data/model_arrays.npz` and `model_data/trade_outcomes.npz`, turn on Internet, and run:
+
+```bash
+git clone --depth 1 https://github.com/BernieLai2001/XAUUSD-1-minute-Deep-Learning-predict-and-Quantitative-Trading-signal-model.git project
+```
+
+```bash
+pip install -q -e project --no-deps
+```
+
+```bash
+cd project && python scripts/7_models/kaggle_m4_deep.py
+```
+
+**Checkpoints.** Model checkpoints are not in Git. Each deep run saves `model.keras` (weights of the epoch with
+the lowest validation loss) to `results/m4/<model>/seed<seed>/`. The checkpoints of the reported runs are in the
+output of the private Kaggle notebook `gold-dl-m4-deep-baselines` (Kaggle → Code → Your Work → Output tab):
+`project/results/m4/<model>/seed<seed>/model.keras`. Download `m4_deep_results.zip` from the same output and unzip it
+in the project root to get the result files.
 
 ### Where each result in the report comes from
 
@@ -257,6 +281,8 @@ an interrupted deep run continues from its last epoch when the same command is r
 | EDA figures 1–8 | `plot_eda_figures.py` | `数据说明/EDA图/`, `eda_stats.txt` |
 | Autocorrelation (figure 7) | `plot_return_acf.py` | `数据说明/EDA图/`, `acf_stats.txt` |
 | Pipeline batch, smoke test, local timing | `section6_pipeline_checks.py`, `time_cnn_bilstm.py` | `数据说明/第6节/` |
+| M4 baselines, tables and figures | `run_baseline.py`, `summarize_m4.py`, `error_analysis_m4.py` | `results/m4/` |
+| M4 deep baselines on Kaggle (timing, checkpoints) | `kaggle_m4_deep.py` | Kaggle notebook output; `results/m4/` |
 | Kaggle timing | `kaggle_timing.py` | `kaggle_timing.json`; copied to `数据说明/第6节/kaggle_timing_T4.csv` |
 | Univariate feature checks, monthly class shares | `section7_checks.py`, `check_monthly_sl_drift.py` | `数据说明/第7节_特征单变量检查.csv`, printed |
 

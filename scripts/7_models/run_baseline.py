@@ -102,6 +102,8 @@ elif args.model in ("logreg", "lgbm"):
 
 else:
     from gold_dl.models import deep as M
+    HW = M.hardware()   # 例如 "Tesla T4, mixed precision"；要在建模型之前调用（会设置混合精度）
+    print("hardware:", HW, flush=True)
     if not args.tag:   # 过拟合一小批的检查只需做一次
         chk = M.overfit_small_batch(args.model, arr)
         print(f"overfit check: final loss {chk['final_loss']:.5f}, correct {chk['n_correct']}/{chk['n_labels']}", flush=True)
@@ -116,7 +118,7 @@ else:
         lv = M.predict_logits(model, arr, "val")
         lv1 = lv[arr["val_half1"]]
         ex.log_run({"model": name, "stage": "final", "input": "window60", "params": {"dropout": args.dropout},
-                    "seed": seed, "val1_logloss": per_head_ll(lv1, arr["y_val1"]),
+                    "seed": seed, "hardware": HW, "val1_logloss": per_head_ll(lv1, arr["y_val1"]),
                     "val1_primary": ex.primary(lv1, arr["y_val1"], p_naive), **info, "time_s": train_s})
         ex.evaluate_final(name, seed, lv, arr, extra={**info, "dropout": args.dropout, "train_seconds": train_s,
-                                                      "hardware": "local Apple Metal GPU, float32"})
+                                                      "hardware": HW})
