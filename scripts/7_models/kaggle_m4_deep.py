@@ -35,7 +35,7 @@ for m in MODELS:
 
 out = Path("/kaggle/working/m4_deep_results.zip")
 with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-    for m in MODELS + [m.split("_")[0] for m in MODELS]:
+    for m in dict.fromkeys(MODELS + [m.split("_")[0] for m in MODELS]):   # 去重，避免同一个文件夹打包两次
         for p in (ROOT / "results" / "m4" / m).rglob("*"):
             if p.is_file() and "tensorboard" not in p.parts and "backup" not in p.parts and p.suffix != ".keras":
                 z.write(p, p.relative_to(ROOT))

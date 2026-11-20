@@ -71,3 +71,4 @@ venv/
 /results/**/tensorboard/
 /results/**/*.keras
 /results/m4/logs/
+/results/m4/_old_local_metal/   # local Apple Metal runs of the deep baselines, replaced by the Kaggle runs (still in git history, commit 16b0c19)
