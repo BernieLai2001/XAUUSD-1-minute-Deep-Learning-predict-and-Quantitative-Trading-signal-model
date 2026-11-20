@@ -1,4 +1,4 @@
-hour,minutes,spread_median,spread_p25,spread_p75,range_median,range_p25,range_p75,atr14_median,wide_share
+hour,minutes,spread_median,spread_p25,spread_p75,range_median,range_p25,range_p75,atr_median,wide_share
 0,10640,4.1442,3.1920,5.6246,1.5000,1.0000,2.4000,1.6857,0.0232
 1,10661,4.4439,3.2881,6.0189,1.9000,1.3000,2.9000,2.0429,0.0232
 2,10671,4.2065,3.0411,5.6019,2.0000,1.3000,3.0000,2.1714,0.0230

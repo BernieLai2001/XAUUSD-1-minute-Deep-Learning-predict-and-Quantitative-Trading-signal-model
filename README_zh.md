@@ -52,15 +52,25 @@ pip install -r requirements-processing.txt
 pip install -r requirements-train.txt
 ```
 
-然后在训练环境中，以可编辑模式安装项目自带的包 `gold_dl`（位于 `src/`），
-这样脚本和 notebook 就可以 `import gold_dl`：
+然后在两个环境中都以可编辑模式安装项目自带的包 `gold_dl`（位于 `src/`），
+这样脚本、测试和 notebook 就可以 `import gold_dl`：
 
 ```bash
 pip install -e .
 ```
 
-`gold_dl.config` 读取 `config.yaml`，并把所有路径解析为相对项目根目录的路径；
+`gold_dl.config` 读取 `config.yaml`，并把所有路径解析为相对项目根目录（即 `config.yaml` 所在目录）的路径。
+所有脚本都用 `path("features", "features_1min.parquet")` 这样的写法从 `config.yaml` 取路径，
+因此脚本放在哪一层文件夹、从哪个目录运行都能找到数据；数据放在别处时，修改 `config.yaml` 的 `paths`，
+或设置环境变量 `GOLD_DL_ROOT` 指向含 `config.yaml` 的目录。
 `gold_dl.data_pipeline` 包含 tf.data 数据管道（`make_dataset`）以及所有数据划分共用的掩码损失。
+多个脚本共用的代码也放在包里：`gold_dl.mbp1`（分块读取每月的 MBP-1 文件、有效盘口判断）、`gold_dl.timeutil`
+（北京时间 / UTC / 美东时间转换、CME 交易日）、`gold_dl.indicators`（ATR、安全除法）、`gold_dl.labels`
+（三重障碍标签，由 `make_labels.py` 和 `make_labels_with_preroll_check.py` 调用）、`gold_dl.plotting`（报告图的颜色、字体和 matplotlib 样式）。
+所有设置（路径、清洗、划分、标签网格和默认组合、特征列表、图的设置）都从 `config.yaml` 读取，改那里的值，计算和图里的文字都会跟着变。
+列名不带参数值：ATR 列叫 `raw_atr`，换月前标记叫 `pre_roll`；每一步把运行时用的设置另存为输出目录（`features/`、`labels/`、`model_data/`）里的
+`run_config_<步骤>.yaml`。`数据说明/` 里 M3 的文档写于这次改动之前，用的是旧列名 `raw_atr14`（即 `raw_atr`，周期 14）和
+`pre_roll_3d`（即 `pre_roll`，3 天）。
 在 Kaggle 上，`kaggle_timing.py` 自带一份数据管道的副本，因此只需上传一个文件。
 
 ## 平台
@@ -79,63 +89,63 @@ pip install -e .
 **1. 下载（processing 环境）**
 
 ```bash
-python scripts/databento_gc_mbp1.py
+python scripts/1_download/databento_gc_mbp1.py
 ```
 
 ```bash
-python scripts/databento_gc_ohlcv1m.py
+python scripts/1_download/databento_gc_ohlcv1m.py
 ```
 
 **2. 由 MBP-1 重建 1 分钟数据**
 
 ```bash
-python scripts/process_gc_mbp1.py
+python scripts/2_aggregate/process_gc_mbp1.py
 ```
 
 ```bash
-python scripts/fix_gc_delta.py
+python scripts/2_aggregate/fix_gc_delta.py
 ```
 
 ```bash
-python scripts/build_gc_quote_1min.py
+python scripts/2_aggregate/build_gc_quote_1min.py
 ```
 
 ```bash
-python scripts/build_gc_book_1min.py
+python scripts/2_aggregate/build_gc_book_1min.py
 ```
 
 ```bash
-python scripts/build_gc_depth_1min.py
+python scripts/2_aggregate/build_gc_depth_1min.py
 ```
 
 ```bash
-python scripts/build_gc_ofi_1min.py
+python scripts/2_aggregate/build_gc_ofi_1min.py
 ```
 
 ```bash
-python scripts/build_gc_spread_tw_1min.py
+python scripts/2_aggregate/build_gc_spread_tw_1min.py
 ```
 
 ```bash
-python scripts/build_gc_trades_1min.py
+python scripts/2_aggregate/build_gc_trades_1min.py
 ```
 
 **3. 特征、标签和数据划分**
 
 ```bash
-python scripts/build_features.py
+python scripts/3_features/build_features.py
 ```
 
 ```bash
-python scripts/make_labels.py
+python scripts/4_labels/make_labels.py
 ```
 
 ```bash
-python scripts/save_default_labels.py
+python scripts/4_labels/save_default_labels.py
 ```
 
 ```bash
-python scripts/make_labels_with_preroll_check.py
+python scripts/4_labels/make_labels_with_preroll_check.py
 ```
 
 `make_labels.py` 为全部 12 种障碍组合生成标签，并按时间划分数据
@@ -146,21 +156,21 @@ python scripts/make_labels_with_preroll_check.py
 **4. 长尾处理、标准化和导出（统计量只取自训练集）**
 
 ```bash
-python scripts/transform_tail_features.py
+python scripts/3_features/transform_tail_features.py
 ```
 
 ```bash
-python scripts/standardize_features.py
+python scripts/3_features/standardize_features.py
 ```
 
 ```bash
-python scripts/export_model_arrays.py
+python scripts/5_export/export_model_arrays.py
 ```
 
 **5. 输入管道检查和冒烟测试（training 环境）**
 
 ```bash
-python scripts/section6_pipeline_checks.py
+python scripts/report_checks/section6_pipeline_checks.py
 ```
 
 同样的检查也放在 `notebooks/01_smoke_test.ipynb` 中，逐步执行，且不写出任何文件（kernel：
@@ -213,8 +223,20 @@ project/
 ├── requirements-processing.txt   第 1–4 步及图表所用的固定版本包
 ├── requirements-train.txt        第 5–6 步所用的固定版本包
 ├── pyproject.toml                使 src/gold_dl 可安装（pip install -e .）
-├── src/gold_dl/        可复用的包：config.py（路径和设置）、data_pipeline.py（tf.data 管道、损失）
-├── scripts/            数据处理、打标签、检查和绘图脚本
+├── src/gold_dl/        可复用的包：config.py（路径和设置）、data_pipeline.py（tf.data 管道、损失）、
+│                       mbp1.py、timeutil.py、indicators.py、labels.py、plotting.py（脚本共用的代码）
+├── scripts/            编号文件夹 = 流程步骤，按 1 → 5 顺序运行
+│   ├── 1_download/     从 Databento 下载（含免费估价）
+│   ├── 2_aggregate/    MBP-1 → 每分钟成交、报价、盘口、深度、OFI、点差
+│   ├── 3_features/     特征、长尾处理、标准化
+│   ├── 4_labels/       三重障碍标签、默认组合、换月前对照版
+│   ├── 5_export/       导出训练用的 numpy 数组
+│   ├── report_checks/  报告引用的统计和检查（第 2、6、7 节、数据划分、标签审核）
+│   ├── figures/        报告图
+│   ├── timing/         一个 epoch 的计时（本地和 Kaggle）
+│   ├── docs_tools/     生成或修改 Word / Markdown 文档（未提交）
+│   ├── explore/        一次性排查脚本（未提交）
+│   └── _archive/       已放弃的现货数据脚本和旧版本（未提交）
 ├── notebooks/          01_smoke_test.ipynb：批次形状、类型、标签取值、窗口检查、300 步冒烟测试
 ├── tests/              test_split.py：没有分钟同时属于两个集合、时间顺序、60 分钟间隔
 ├── 数据说明/            报告笔记、图和表（中英文图）
@@ -225,7 +247,6 @@ project/
 └── model_data/         model_arrays.npz             （未提交）
 ```
 
-<!-- TODO：目前只有 gold_dl 和 tests/ 读取 config.yaml；各脚本仍使用各自的常量。 -->
 
 ## 许可
 

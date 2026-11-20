@@ -63,15 +63,28 @@ pip install -r requirements-processing.txt
 pip install -r requirements-train.txt
 ```
 
-Then, in the training environment, install the project's own package `gold_dl` (in `src/`) in editable mode, so
-scripts and notebooks can `import gold_dl`:
+Then, in both environments, install the project's own package `gold_dl` (in `src/`) in editable mode, so
+scripts, tests and notebooks can `import gold_dl`:
 
 ```bash
 pip install -e .
 ```
 
-`gold_dl.config` reads `config.yaml` and resolves every path relative to the project root;
+`gold_dl.config` reads `config.yaml` and resolves every path relative to the project root (the folder holding `config.yaml`).
+Every script gets its paths from `config.yaml`, e.g. `path("features", "features_1min.parquet")`, so a script finds
+the data however deep it sits and wherever it is run from. To keep the data elsewhere, edit `paths` in `config.yaml`
+or set the environment variable `GOLD_DL_ROOT` to the folder holding `config.yaml`.
 `gold_dl.data_pipeline` holds the tf.data pipeline (`make_dataset`) and the masked loss used by every split.
+Code shared by several scripts also lives in the package: `gold_dl.mbp1` (read the monthly MBP-1 files in chunks,
+valid-book test), `gold_dl.timeutil` (Beijing / UTC / US Eastern conversion, CME trade date), `gold_dl.indicators`
+(ATR, safe division), `gold_dl.labels` (triple-barrier labels, called by `make_labels.py` and
+`make_labels_with_preroll_check.py`) and `gold_dl.plotting` (colours, fonts and matplotlib style of the report figures).
+All settings (paths, cleaning, split, label grid and default, feature lists, figure settings) are read from
+`config.yaml`; changing a value there changes the calculations and the text in the figures. Column names do not
+carry parameter values: the ATR column is `raw_atr` and the pre-roll flag is `pre_roll`. Each step saves the settings
+it ran with as `run_config_<step>.yaml` next to its output (`features/`, `labels/`, `model_data/`). The M3 data notes
+in `数据说明/` were written before this change and use the old names `raw_atr14` (= `raw_atr`, period 14) and
+`pre_roll_3d` (= `pre_roll`, 3 days).
 On Kaggle, `kaggle_timing.py` carries its own copy of the pipeline so that only one file has to be uploaded.
 
 ## Platform
@@ -90,63 +103,63 @@ clone can live in any folder. Random seeds are fixed at 42 wherever randomness a
 **1. Download (processing environment)**
 
 ```bash
-python scripts/databento_gc_mbp1.py
+python scripts/1_download/databento_gc_mbp1.py
 ```
 
 ```bash
-python scripts/databento_gc_ohlcv1m.py
+python scripts/1_download/databento_gc_ohlcv1m.py
 ```
 
 **2. Rebuild 1-minute data from MBP-1**
 
 ```bash
-python scripts/process_gc_mbp1.py
+python scripts/2_aggregate/process_gc_mbp1.py
 ```
 
 ```bash
-python scripts/fix_gc_delta.py
+python scripts/2_aggregate/fix_gc_delta.py
 ```
 
 ```bash
-python scripts/build_gc_quote_1min.py
+python scripts/2_aggregate/build_gc_quote_1min.py
 ```
 
 ```bash
-python scripts/build_gc_book_1min.py
+python scripts/2_aggregate/build_gc_book_1min.py
 ```
 
 ```bash
-python scripts/build_gc_depth_1min.py
+python scripts/2_aggregate/build_gc_depth_1min.py
 ```
 
 ```bash
-python scripts/build_gc_ofi_1min.py
+python scripts/2_aggregate/build_gc_ofi_1min.py
 ```
 
 ```bash
-python scripts/build_gc_spread_tw_1min.py
+python scripts/2_aggregate/build_gc_spread_tw_1min.py
 ```
 
 ```bash
-python scripts/build_gc_trades_1min.py
+python scripts/2_aggregate/build_gc_trades_1min.py
 ```
 
 **3. Features, labels and the split**
 
 ```bash
-python scripts/build_features.py
+python scripts/3_features/build_features.py
 ```
 
 ```bash
-python scripts/make_labels.py
+python scripts/4_labels/make_labels.py
 ```
 
 ```bash
-python scripts/save_default_labels.py
+python scripts/4_labels/save_default_labels.py
 ```
 
 ```bash
-python scripts/make_labels_with_preroll_check.py
+python scripts/4_labels/make_labels_with_preroll_check.py
 ```
 
 `make_labels.py` builds the labels for all 12 barrier combinations and assigns the time-based split
@@ -157,21 +170,21 @@ combination (k_SL = 2, 1:1). `make_labels_with_preroll_check.py` rebuilds the la
 **4. Long-tail treatment, standardisation and export (statistics from the training set only)**
 
 ```bash
-python scripts/transform_tail_features.py
+python scripts/3_features/transform_tail_features.py
 ```
 
 ```bash
-python scripts/standardize_features.py
+python scripts/3_features/standardize_features.py
 ```
 
 ```bash
-python scripts/export_model_arrays.py
+python scripts/5_export/export_model_arrays.py
 ```
 
 **5. Input pipeline checks and smoke test (training environment)**
 
 ```bash
-python scripts/section6_pipeline_checks.py
+python scripts/report_checks/section6_pipeline_checks.py
 ```
 
 The same checks, step by step and without writing any files, are in `notebooks/01_smoke_test.ipynb` (kernel:
@@ -225,8 +238,20 @@ project/
 ├── requirements-processing.txt   pinned packages for steps 1–4 and figures
 ├── requirements-train.txt        pinned packages for steps 5–6
 ├── pyproject.toml                makes src/gold_dl installable (pip install -e .)
-├── src/gold_dl/        reusable package: config.py (paths and settings), data_pipeline.py (tf.data pipeline, loss)
-├── scripts/            processing, labelling, check and figure scripts
+├── src/gold_dl/        reusable package: config.py (paths and settings), data_pipeline.py (tf.data pipeline, loss),
+│                       mbp1.py, timeutil.py, indicators.py, labels.py, plotting.py (code shared by the scripts)
+├── scripts/            numbered folders = pipeline steps, run in order 1 → 5
+│   ├── 1_download/     Databento downloads (and the free cost estimate)
+│   ├── 2_aggregate/    MBP-1 → 1-minute trades, quotes, book, depth, OFI, spread
+│   ├── 3_features/     features, long-tail treatment, standardization
+│   ├── 4_labels/       triple-barrier labels, default combination, pre-roll comparison version
+│   ├── 5_export/       numpy arrays for training
+│   ├── report_checks/  statistics and checks quoted in the report (sections 2, 6, 7; split; label audit)
+│   ├── figures/        report figures
+│   ├── timing/         epoch timing (local and Kaggle)
+│   ├── docs_tools/     generate or edit the Word / Markdown documents (not committed)
+│   ├── explore/        one-off investigations (not committed)
+│   └── _archive/       discarded spot-data scripts and old versions (not committed)
 ├── notebooks/          01_smoke_test.ipynb: batch shapes, types, label values, window check, 300-step smoke test
 ├── tests/              test_split.py: no minute in two sets, time order, 60-minute gaps
 ├── 数据说明/            report notes, figures and tables (Chinese and English figures)
@@ -237,7 +262,6 @@ project/
 └── model_data/         model_arrays.npz           (not committed)
 ```
 
-<!-- TODO: only gold_dl and tests/ read config.yaml so far; the scripts still keep their own constants. -->
 
 ## Licence
 

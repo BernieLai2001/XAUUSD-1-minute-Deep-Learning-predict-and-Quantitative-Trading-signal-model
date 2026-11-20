@@ -1,17 +1,14 @@
 # 划分检查：训练、验证、测试集按时间先后排列、互不重叠，每个分界处至少隔开 gap_min 分钟（= 最长持有期）
 # 本项目的"组"是时间：每一分钟只能属于一个数据集，任何一分钟都不能同时出现在两个数据集里
 # 运行：pytest tests/test_split.py（需要先跑完 make_labels.py 和 export_model_arrays.py；数据不存在时跳过）
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
-import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-CFG = yaml.safe_load(open(ROOT / "config.yaml", encoding="utf-8"))
-LABELS = ROOT / CFG["paths"]["labels"] / "labels_default.parquet"
-ARRAYS = ROOT / CFG["paths"]["model_arrays"]
+from gold_dl.config import CFG, path
+
+LABELS = path("labels", "labels_default.parquet")
+ARRAYS = path("model_arrays")
 GAP = pd.Timedelta(minutes=CFG["split"]["gap_min"])
 SPLITS = ["train", "val", "test"]
 

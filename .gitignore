@@ -1,13 +1,21 @@
 # ---------- Credentials (never commit) ----------
 databento_key.txt
+twelvedata_key.txt
+*_key.txt
 kaggle.json
 .env
 *.key
-# fetch_xauusd.py contains a hard-coded Twelve Data API key (discarded spot data)
-scripts/fetch_xauusd.py
+# Discarded spot-data download (Twelve Data); its key now lives in twelvedata_key.txt.
+# "**/" matches the file in any folder, so the rule still works if the script is moved.
+**/fetch_xauusd.py
 
 # Helper scripts that search local chat transcripts, unrelated to the results
-scripts/search_transcript_*.py
+**/search_transcript_*.py
+
+# One-off investigations, document tools and archived scripts: kept locally, not part of the pipeline
+/scripts/explore/
+/scripts/docs_tools/
+/scripts/_archive/
 
 # ---------- Data: CME market data, licence forbids redistribution ----------
 /GC_mbp1/
@@ -54,3 +62,6 @@ venv/
 ~$*
 .Rhistory
 .~*
+
+# personal change report, not committed
+/数据说明/代码整理改动报告.docx
